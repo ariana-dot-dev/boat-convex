@@ -1,0 +1,76 @@
+{
+  "name": "@boatdev/convex",
+  "version": "0.1.0",
+  "description": "Boat cloud sandboxes (full root Linux VMs) as a Convex component: reactive state, retry-safe create, exec, files, preview URLs, coding agents.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ariana-dot-dev/boat-convex.git"
+  },
+  "homepage": "https://github.com/ariana-dot-dev/boat-convex#readme",
+  "bugs": {
+    "url": "https://github.com/ariana-dot-dev/boat-convex/issues"
+  },
+  "keywords": [
+    "convex",
+    "convex-component",
+    "component",
+    "boat",
+    "sandbox",
+    "virtual-machine",
+    "agents"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "src/component",
+    "!src/component/**/*.test.ts",
+    "src/test.ts"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/client/index.d.ts",
+      "default": "./dist/client/index.js"
+    },
+    "./test": "./src/test.ts",
+    "./_generated/component.js": {
+      "types": "./dist/component/_generated/component.d.ts"
+    },
+    "./_generated/component": {
+      "types": "./dist/component/_generated/component.d.ts"
+    },
+    "./convex.config.js": {
+      "types": "./dist/component/convex.config.d.ts",
+      "default": "./dist/component/convex.config.js"
+    },
+    "./convex.config": {
+      "types": "./dist/component/convex.config.d.ts",
+      "default": "./dist/component/convex.config.js"
+    }
+  },
+  "types": "./dist/client/index.d.ts",
+  "module": "./dist/client/index.js",
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "build:codegen": "convex codegen --component-dir ./src/component && npm run build",
+    "typecheck": "tsc --noEmit && tsc -p example/convex",
+    "test": "vitest run --typecheck",
+    "e2e": "node --env-file-if-exists=.env scripts/e2e.mjs",
+    "prepare": "npm run build"
+  },
+  "peerDependencies": {
+    "convex": "^1.45.0"
+  },
+  "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
+    "@types/node": "^24.3.0",
+    "convex": "^1.45.0",
+    "convex-test": "^0.0.56",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
