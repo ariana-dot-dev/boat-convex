@@ -19,6 +19,16 @@ export const sandboxInfo = v.object({
   snapshotCompletedAt: nullableString,
   setupStatus: nullableString,
   setupError: nullableString,
+  /** False when created with snapshots off: it cannot be resumed or forked. */
+  snapshots: v.optional(v.boolean()),
+  /** "degraded": the machine is alive but Boat cannot fully reach it. The sandbox keeps running. */
+  health: v.optional(v.string()),
+  healthReason: nullableString,
+  degradedSince: nullableString,
+  /** Organization sandboxes: who created it, and what this API key may do with it (owner/use/view). */
+  createdBy: nullableString,
+  createdById: nullableString,
+  access: v.optional(v.string()),
 });
 
 export default defineSchema({

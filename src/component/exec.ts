@@ -128,6 +128,8 @@ export const prompt = action({
     provider: v.string(),
     model: v.optional(v.string()),
     reasoningEffort: v.optional(v.string()),
+    /** Fast mode: same model, faster output, billed at the provider's fast rate. Omit for the dashboard default. */
+    fast: v.optional(v.boolean()),
     conversationId: v.optional(v.string()),
     newConversation: v.optional(v.boolean()),
   },
@@ -143,6 +145,7 @@ export const prompt = action({
           provider: args.provider,
           model: args.model,
           reasoningEffort: args.reasoningEffort,
+          fast: args.fast,
           conversationId: args.conversationId,
           ...(args.newConversation ? { new: true } : {}),
         },

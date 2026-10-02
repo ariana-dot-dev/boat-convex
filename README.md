@@ -84,17 +84,25 @@ Every call names a sandbox by `{ ownerId, key }`.
 | Method | What it does |
 |---|---|
 | `get`, `list` | Reactive reads of the cached state (queries). |
-| `create({ options })` | Create, or return the existing sandbox for this key. Options: `name`, `type` (`small`/`default`/`large`), `ttlSeconds` (auto-stop, `null` = never), `env`, `noEnv`, `environment`, `setupScript`, `from` (named snapshot). |
+| `create({ options })` | Create, or return the existing sandbox for this key. Options: `name`, `type` (`small`/`default`/`large`), `ttlSeconds` (auto-stop, `null` = never), `env`, `noEnv`, `environment`, `setupScript`, `from` (named snapshot), `snapshots: false` (never snapshot: cheaper, but stop erases the disk and it cannot be resumed or forked), `failFast` (see below). |
 | `refresh` | Pull the live state from Boat, e.g. after an auto-stop. |
 | `stop({ force? })` | Snapshot the disk and stop billing. |
-| `resume({ options? })` | Bring it back exactly as it was, optionally on another size. |
-| `fork({ newKey })` | Copy the sandbox, disk and all, into a new one. Copies the latest snapshot, which every stop takes. |
+| `resume({ options? })` | Bring it back exactly as it was, optionally on another size. Takes `failFast`. |
+| `fork({ newKey, options? })` | Copy the sandbox, disk and all, into a new one. Copies the latest snapshot, which every stop takes. Takes `failFast`. |
+| `share` | Let every member of the paying organization use the sandbox. One-way; your logins are wiped at its next start. Returns `restartRequired` when it was running. |
 | `destroy` | Permanently delete the sandbox and its snapshots. |
 | `exec({ command, cwd?, timeoutSeconds? })` | Run and wait (up to 600 s). |
 | `spawn({ command })` → `commandStatus({ processId })` | Background process (dev server, long build) and its logs. |
 | `readFile`, `writeFile` | `utf8` or `base64`; paths under `/home/user` or `/tmp`. |
 | `host({ port, public? })` | Public HTTPS URL for a port. Token-gated unless `public: true`. |
-| `prompt({ prompt, provider })` → `events`, `promptStatus` | Hand a task to a coding agent inside the sandbox and follow its work. |
+| `prompt({ prompt, provider, model?, fast? })` → `events`, `promptStatus` | Hand a task to a coding agent inside the sandbox and follow its work. `fast: true` runs models that support it in fast mode. |
+
+**`failFast: true`** on `create`, `fork` or `resume` answers in about 1.5 s. When no machine is ready it throws
+`BoatApiError` with status `503` and code `no_ready_machine`: nothing is created, billed or counted, and a retry with the
+same key is safe.
+
+The cached `sandbox` also carries `health` (`ok`/`degraded`, with `healthReason`), `snapshots`, and for organization
+sandboxes `createdBy` and `access` (`owner`/`use`/`view`).
 
 ## Multi-tenant safety
 

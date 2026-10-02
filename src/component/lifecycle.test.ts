@@ -13,7 +13,10 @@ type Call = { method: string; path: string; headers: Record<string, string>; bod
 function fakeBoat() {
   const calls: Call[] = [];
   let gets = 0;
-  const sandbox = (state: string) => ({ id: "bx_23456789", name: "main", state, url: null, desktopAvailable: false, snapshotAvailable: false });
+  const sandbox = (state: string) => ({
+    id: "bx_23456789", name: "main", state, url: null, desktopAvailable: false, snapshotAvailable: false,
+    snapshots: true, health: "ok", healthReason: null, createdBy: "Ada", access: "owner",
+  });
   vi.stubGlobal("fetch", async (url: string, init: RequestInit) => {
     const path = new URL(url).pathname.replace("/api/v1", "");
     calls.push({
@@ -23,6 +26,9 @@ function fakeBoat() {
       body: init.body ? JSON.parse(String(init.body)) : undefined,
     });
     const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
+    const body = init.body ? JSON.parse(String(init.body)) : {};
+    if (body.failFast && failFastBusy) return json({ error: "no_ready_machine", status: "blocked", message: "No small machine is ready" }, 503);
+    if (path.endsWith("/share")) return json({ sandbox: { ...sandbox("idle"), access: "owner" }, restartRequired: true });
     if (init.method === "POST" && path === "/sandboxes") return json({ ok: true, sandbox: sandbox("provisioning") }, 202);
     if (init.method === "GET" && path === "/sandboxes/bx_23456789") return json({ ok: true, sandbox: sandbox(++gets > 1 ? "idle" : "provisioning") });
     if (init.method === "DELETE") return json({ ok: true, operation: {} }, 202);
@@ -31,6 +37,8 @@ function fakeBoat() {
   });
   return calls;
 }
+/** While true, a failFast call gets Boat's 503 no_ready_machine. */
+let failFastBusy = false;
 
 describe("boat component", () => {
   beforeEach(() => {
@@ -41,6 +49,42 @@ describe("boat component", () => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
+    failFastBusy = false;
+  });
+
+  test("failFast 503 is a typed no_ready_machine error, and a retry with the same key creates", async () => {
+    const calls = fakeBoat();
+    const t = convexTest(schema, modules);
+    failFastBusy = true;
+    const options = { type: "small" as const, failFast: true, snapshots: false };
+    await expect(t.action(api.lifecycle.create, { ...owner, options })).rejects.toThrow(/503 no_ready_machine/);
+    expect(await t.query(api.sandboxes.get, owner)).toMatchObject({ state: "creating", lastError: expect.stringMatching(/no_ready_machine/) });
+
+    failFastBusy = false;
+    expect(await t.action(api.lifecycle.create, { ...owner, options })).toMatchObject({ sandboxId: "bx_23456789" });
+    const posts = calls.filter((c) => c.method === "POST");
+    expect(posts).toHaveLength(2);
+    expect(posts[1].headers["Idempotency-Key"]).toBe(posts[0].headers["Idempotency-Key"]);
+    expect(posts[1].body).toMatchObject({ failFast: true, snapshots: false });
+  });
+
+  test("caches health, snapshots and org access; share reports restartRequired", async () => {
+    const calls = fakeBoat();
+    const t = convexTest(schema, modules);
+    await t.action(api.lifecycle.create, owner);
+    expect((await t.query(api.sandboxes.get, owner))?.sandbox).toMatchObject({
+      snapshots: true, health: "ok", healthReason: null, createdBy: "Ada", access: "owner",
+    });
+    expect(await t.action(api.lifecycle.share, owner)).toMatchObject({ restartRequired: true, sandbox: { state: "idle" } });
+    expect(calls.at(-1)).toMatchObject({ method: "POST", path: "/sandboxes/bx_23456789/share" });
+  });
+
+  test("prompt passes fast mode through", async () => {
+    const calls = fakeBoat();
+    const t = convexTest(schema, modules);
+    await t.action(api.lifecycle.create, owner);
+    await expect(t.action(api.exec.prompt, { ...owner, prompt: "hi", provider: "codex", fast: true })).rejects.toThrow();
+    expect(calls.at(-1)).toMatchObject({ path: "/sandboxes/bx_23456789/prompt", body: { fast: true } });
   });
 
   test("create is idempotent per key and settles to ready on its own", async () => {

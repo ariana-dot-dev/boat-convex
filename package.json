@@ -1,6 +1,6 @@
 {
   "name": "@boatdev/convex",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Boat cloud sandboxes (full root Linux VMs) as a Convex component: reactive state, retry-safe create, exec, files, preview URLs, coding agents.",
   "license": "MIT",
   "type": "module",

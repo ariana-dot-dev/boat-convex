@@ -83,6 +83,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         "internal",
         {
           conversationId?: string;
+          fast?: boolean;
           key: string;
           model?: string;
           newConversation?: boolean;
@@ -143,10 +144,12 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           options?: {
             env?: Record<string, string>;
             environment?: string;
+            failFast?: boolean;
             from?: string;
             name?: string;
             noEnv?: boolean;
             setupScript?: string;
+            snapshots?: boolean;
             ttlSeconds?: number | null;
             type?: "small" | "default" | "large";
           };
@@ -157,8 +160,14 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           lastError?: string;
           ownerId: string;
           sandbox?: {
+            access?: string;
             archiveAfter?: string | null;
             createdAt?: string | null;
+            createdBy?: string | null;
+            createdById?: string | null;
+            degradedSince?: string | null;
+            health?: string;
+            healthReason?: string | null;
             id: string;
             ip?: string | null;
             name: string;
@@ -166,6 +175,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             setupStatus?: string | null;
             snapshotAvailable?: boolean;
             snapshotCompletedAt?: string | null;
+            snapshots?: boolean;
             state: string;
             subdomain?: string | null;
             type?: string;
@@ -194,6 +204,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           options?: {
             env?: Record<string, string>;
             environment?: string;
+            failFast?: boolean;
             noEnv?: boolean;
             ttlSeconds?: number | null;
             type?: "small" | "default" | "large";
@@ -205,8 +216,14 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           lastError?: string;
           ownerId: string;
           sandbox?: {
+            access?: string;
             archiveAfter?: string | null;
             createdAt?: string | null;
+            createdBy?: string | null;
+            createdById?: string | null;
+            degradedSince?: string | null;
+            health?: string;
+            healthReason?: string | null;
             id: string;
             ip?: string | null;
             name: string;
@@ -214,6 +231,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             setupStatus?: string | null;
             snapshotAvailable?: boolean;
             snapshotCompletedAt?: string | null;
+            snapshots?: boolean;
             state: string;
             subdomain?: string | null;
             type?: string;
@@ -235,8 +253,14 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           lastError?: string;
           ownerId: string;
           sandbox?: {
+            access?: string;
             archiveAfter?: string | null;
             createdAt?: string | null;
+            createdBy?: string | null;
+            createdById?: string | null;
+            degradedSince?: string | null;
+            health?: string;
+            healthReason?: string | null;
             id: string;
             ip?: string | null;
             name: string;
@@ -244,6 +268,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             setupStatus?: string | null;
             snapshotAvailable?: boolean;
             snapshotCompletedAt?: string | null;
+            snapshots?: boolean;
             state: string;
             subdomain?: string | null;
             type?: string;
@@ -264,6 +289,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           options?: {
             env?: Record<string, string>;
             environment?: string;
+            failFast?: boolean;
             noEnv?: boolean;
             ttlSeconds?: number | null;
             type?: "small" | "default" | "large";
@@ -275,8 +301,14 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           lastError?: string;
           ownerId: string;
           sandbox?: {
+            access?: string;
             archiveAfter?: string | null;
             createdAt?: string | null;
+            createdBy?: string | null;
+            createdById?: string | null;
+            degradedSince?: string | null;
+            health?: string;
+            healthReason?: string | null;
             id: string;
             ip?: string | null;
             name: string;
@@ -284,6 +316,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             setupStatus?: string | null;
             snapshotAvailable?: boolean;
             snapshotCompletedAt?: string | null;
+            snapshots?: boolean;
             state: string;
             subdomain?: string | null;
             type?: string;
@@ -296,6 +329,46 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         },
         Name
       >;
+      share: FunctionReference<
+        "action",
+        "internal",
+        { key: string; ownerId: string },
+        {
+          restartRequired: boolean;
+          sandbox: {
+            key: string;
+            lastError?: string;
+            ownerId: string;
+            sandbox?: {
+              access?: string;
+              archiveAfter?: string | null;
+              createdAt?: string | null;
+              createdBy?: string | null;
+              createdById?: string | null;
+              degradedSince?: string | null;
+              health?: string;
+              healthReason?: string | null;
+              id: string;
+              ip?: string | null;
+              name: string;
+              setupError?: string | null;
+              setupStatus?: string | null;
+              snapshotAvailable?: boolean;
+              snapshotCompletedAt?: string | null;
+              snapshots?: boolean;
+              state: string;
+              subdomain?: string | null;
+              type?: string;
+              updatedAt?: string | null;
+              url?: string | null;
+            };
+            sandboxId?: string;
+            state: string;
+            updatedAt: number;
+          };
+        },
+        Name
+      >;
       stop: FunctionReference<
         "action",
         "internal",
@@ -305,8 +378,14 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           lastError?: string;
           ownerId: string;
           sandbox?: {
+            access?: string;
             archiveAfter?: string | null;
             createdAt?: string | null;
+            createdBy?: string | null;
+            createdById?: string | null;
+            degradedSince?: string | null;
+            health?: string;
+            healthReason?: string | null;
             id: string;
             ip?: string | null;
             name: string;
@@ -314,6 +393,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             setupStatus?: string | null;
             snapshotAvailable?: boolean;
             snapshotCompletedAt?: string | null;
+            snapshots?: boolean;
             state: string;
             subdomain?: string | null;
             type?: string;
@@ -337,8 +417,14 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           lastError?: string;
           ownerId: string;
           sandbox?: {
+            access?: string;
             archiveAfter?: string | null;
             createdAt?: string | null;
+            createdBy?: string | null;
+            createdById?: string | null;
+            degradedSince?: string | null;
+            health?: string;
+            healthReason?: string | null;
             id: string;
             ip?: string | null;
             name: string;
@@ -346,6 +432,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             setupStatus?: string | null;
             snapshotAvailable?: boolean;
             snapshotCompletedAt?: string | null;
+            snapshots?: boolean;
             state: string;
             subdomain?: string | null;
             type?: string;
@@ -367,8 +454,14 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           lastError?: string;
           ownerId: string;
           sandbox?: {
+            access?: string;
             archiveAfter?: string | null;
             createdAt?: string | null;
+            createdBy?: string | null;
+            createdById?: string | null;
+            degradedSince?: string | null;
+            health?: string;
+            healthReason?: string | null;
             id: string;
             ip?: string | null;
             name: string;
@@ -376,6 +469,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             setupStatus?: string | null;
             snapshotAvailable?: boolean;
             snapshotCompletedAt?: string | null;
+            snapshots?: boolean;
             state: string;
             subdomain?: string | null;
             type?: string;
