@@ -30,9 +30,14 @@ export const createOptions = v.object({
   noEnv: v.optional(v.boolean()),
   setupScript: v.optional(v.string()),
   from: v.optional(v.string()),
+  /** false: never snapshot. Cheaper, but stop erases the disk and it cannot be resumed or forked. */
+  snapshots: v.optional(v.boolean()),
+  /** true: answer in ~1.5 s, or throw 503 no_ready_machine with nothing created or billed. */
+  failFast: v.optional(v.boolean()),
 });
 
 export const resumeOptions = v.object({
+  failFast: v.optional(v.boolean()),
   type: machineType,
   ttlSeconds,
   env: envVars,
@@ -179,6 +184,25 @@ export const resume = action({
         body: args.options ?? {},
       });
       return await sync(ctx, record, sandbox);
+    });
+  },
+});
+
+/**
+ * Let every member of the paying organization use this sandbox. One-way: the creator's logins are wiped at
+ * its next start. `restartRequired`: it was running, so it stays view-only for teammates until stop + resume.
+ */
+export const share = action({
+  args: identity,
+  returns: v.object({ sandbox: publicRecord, restartRequired: v.boolean() }),
+  handler: async (ctx, args): Promise<{ sandbox: PublicRecord; restartRequired: boolean }> => {
+    const record = await requireLinked(ctx, args.ownerId, args.key);
+    return await tracked(ctx, record, async () => {
+      const r = await boat<{ sandbox: BoatSandbox; restartRequired?: boolean }>(
+        "POST",
+        sandboxPath(record.sandboxId, "/share"),
+      );
+      return { sandbox: await sync(ctx, record, r.sandbox), restartRequired: Boolean(r.restartRequired) };
     });
   },
 });

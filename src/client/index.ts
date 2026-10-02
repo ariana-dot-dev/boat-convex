@@ -53,6 +53,10 @@ export class Boat {
   fork(ctx: ActionCtx, args: Args<Api["lifecycle"]["fork"]>): Ret<Api["lifecycle"]["fork"]> {
     return ctx.runAction(this.component.lifecycle.fork, args);
   }
+  /** Let the paying organization's members use the sandbox. One-way; wipes your logins at its next start. */
+  share(ctx: ActionCtx, args: SandboxRef): Ret<Api["lifecycle"]["share"]> {
+    return ctx.runAction(this.component.lifecycle.share, args);
+  }
   /** Permanently delete the sandbox and its snapshots. Irreversible. */
   destroy(ctx: ActionCtx, args: SandboxRef): Ret<Api["lifecycle"]["destroy"]> {
     return ctx.runAction(this.component.lifecycle.destroy, args);

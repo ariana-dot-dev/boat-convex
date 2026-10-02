@@ -38,8 +38,12 @@ try {
   assert.equal(again.sandboxId, created.sandboxId, "create is idempotent per key");
   log("create again: same sandbox");
 
-  await waitFor(a, READY);
+  const ready = await waitFor(a, READY);
   log("ready (seen through the reactive query)");
+  assert.equal(ready.sandbox.health, "ok", "health is cached");
+  assert.equal(ready.sandbox.access, "owner", "access is cached");
+  assert.equal(ready.sandbox.snapshots, true, "snapshots flag is cached");
+  log("health, access, snapshots cached", `${ready.sandbox.health}/${ready.sandbox.access}/${ready.sandbox.snapshots}`);
 
   const run = await client.action(w.run, { ...a, command: "echo hello from $(uname -s)" });
   assert.equal(run.exitCode, 0, run.stderr);

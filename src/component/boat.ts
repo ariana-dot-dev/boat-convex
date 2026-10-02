@@ -44,10 +44,11 @@ export async function boat<T = Record<string, unknown>>(
     json = { message: text.slice(0, 500) };
   }
   if (!response.ok || json.ok === false) {
-    const error = (json.error ?? {}) as Record<string, unknown>;
+    // Boat answers either { error: "code", message } or { error: { code, message } }.
+    const error = (typeof json.error === "object" && json.error ? json.error : {}) as Record<string, unknown>;
     throw new BoatApiError(
       response.status,
-      String(json.code ?? error.code ?? "boat_api_error"),
+      String(json.code ?? error.code ?? (typeof json.error === "string" ? json.error : "boat_api_error")),
       String(json.message ?? error.message ?? response.statusText),
     );
   }
@@ -79,12 +80,20 @@ export function summarize(sandbox: BoatSandbox) {
     "snapshotCompletedAt",
     "setupStatus",
     "setupError",
+    "health",
+    "healthReason",
+    "degradedSince",
+    "createdBy",
+    "createdById",
+    "access",
   ]) {
     const value = pick(key);
-    if (value !== undefined && !(key === "type" && value === null)) out[key] = value;
+    if (value !== undefined && !((key === "type" || key === "health" || key === "access") && value === null)) {
+      out[key] = value;
+    }
   }
-  if (typeof sandbox.snapshotAvailable === "boolean") {
-    out.snapshotAvailable = sandbox.snapshotAvailable;
+  for (const key of ["snapshotAvailable", "snapshots"]) {
+    if (typeof sandbox[key] === "boolean") out[key] = sandbox[key];
   }
   return out as {
     id: string;
@@ -101,6 +110,13 @@ export function summarize(sandbox: BoatSandbox) {
     snapshotCompletedAt?: string | null;
     setupStatus?: string | null;
     setupError?: string | null;
+    snapshots?: boolean;
+    health?: string;
+    healthReason?: string | null;
+    degradedSince?: string | null;
+    createdBy?: string | null;
+    createdById?: string | null;
+    access?: string;
   };
 }
 
